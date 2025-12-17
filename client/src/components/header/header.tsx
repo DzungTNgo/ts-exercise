@@ -3,9 +3,14 @@ import { Button } from "../button/button.tsx";
 import styles from "./header.module.css";
 import { AddInsight } from "../add-insight/add-insight.tsx";
 
+type HeaderProps = {
+  reload: boolean;
+  setReload: (reload: boolean) => void;
+};
+
 export const HEADER_TEXT = "Suit Tracker Insights";
 
-export const Header = () => {
+export const Header = (props: HeaderProps) => {
   const [addInsightOpen, setAddInsightOpen] = useState(false);
 
   return (
@@ -21,6 +26,7 @@ export const Header = () => {
         </div>
       </header>
       <AddInsight
+        {...props}
         open={addInsightOpen}
         onClose={() => setAddInsightOpen(false)}
       />

@@ -10,9 +10,7 @@ export default (input: Input): Insight | undefined => {
   console.log(`Looking up insight for id=${input.id}`);
 
   const [row] = input.db
-    .sql<
-    insightsTable.Row
-  >`SELECT * FROM insights WHERE id = ${input.id} LIMIT 1`;
+    .sql<insightsTable.Row>`SELECT * FROM insights WHERE id = ${input.id} LIMIT 1`;
 
   if (row) {
     const result = { ...row, createdAt: new Date(row.createdAt) };
