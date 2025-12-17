@@ -46,10 +46,8 @@ export const AddInsight = (props: AddInsightProps) => {
     })
     .then((res) => {
       if (!res.ok) {
-        return res.text().then((text) => {
-          console.error("Failed to add insight:", text);
-          throw new Error(text || "Failed to add insight");
-        });
+        console.error("Failed to add insight: ", res.status);
+        throw new Error("Failed to add insight");
       }
 
       props.onClose();

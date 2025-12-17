@@ -1,48 +1,53 @@
 import type { Insight } from "$models/insight.ts";
 import type { HasDBClient } from "../shared.ts";
+import { ResponseError } from "../utils/error.ts";
+import { Status } from "@oak/oak";
 import * as insightsTable from "$tables/insights.ts";
 
 type Input = HasDBClient & {
   data: insightsTable.Insert;
 };
 
-export default (input: Input): Insight | undefined => {
+export default (input: Input): Insight => {
   const { brand, createdAt, text } = input.data;
 
   if (!brand || typeof brand !== "string") {
     console.error("Validation error: invalid 'brand'", { brand });
-    return;
+    throw new ResponseError(Status.BadRequest, "Invalid 'brand' value");
   }
   if (!text || typeof text !== "string") {
     console.error("Validation error: invalid 'text'", { text });
-    return;
+    throw new ResponseError(
+      Status.BadRequest,
+      "Invalid 'text' in insight payload",
+    );
   }
 
   const createdAtDate = new Date(createdAt);
   if (Number.isNaN(createdAtDate.getTime())) {
     console.error("Validation error: invalid 'createdAt'", { createdAt });
-    return;
+    throw new ResponseError(
+      Status.BadRequest,
+      "Invalid 'createdAt' in insight payload",
+    );
   }
 
   try {
-    console.log(`Add an insight`);
+    console.log(`Adding an insight`);
 
-    input.db.exec(
-      "INSERT INTO insights (brand, createdAt, text) VALUES (?, ?, ?)",
-      brand,
-      createdAtDate.toISOString(),
-      text,
-    );
+    input.db.exec(insightsTable.insertStatement, brand, createdAtDate.toISOString(), text);
     const insertedId = input.db.lastInsertRowId;
 
-    const [row] = input.db.sql<
-      insightsTable.Row
-    >`SELECT * FROM insights WHERE id = ${insertedId} LIMIT 1`;
-    const result = { ...row, createdAt: new Date(row.createdAt) };
+    const result: Insight = {
+      id: insertedId,
+      brand,
+      createdAt: createdAtDate,
+      text,
+    };
+
     return result;
   } catch (error) {
-    
     console.error("Failed to insert insight into DB", error);
-    return;
+    throw new ResponseError(Status.InternalServerError, "Failed to add an insight.");
   }
 };

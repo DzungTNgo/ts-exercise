@@ -17,7 +17,8 @@ export const Insights = ({ insights, className, reload, setReload }: InsightsPro
     fetch(`/api/insights/${encodeURIComponent(String(id))}`, { method: "DELETE" })
     .then((res) => {
       if (!res.ok) {
-        console.error("Failed to delete insight:");
+        console.error("Failed to delete insight: ", res.status);
+        throw new Error("Failed to delete insight");
       }
     })
     .catch((err) => {
